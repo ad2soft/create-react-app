@@ -275,6 +275,7 @@ module.exports = function(webpackEnv) {
         // Support React Native Web
         // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
         'react-native': 'react-native-web',
+        '@qily': path.resolve('src/@qily/'),
       },
       plugins: [
         // Adds support for installing with Plug'n'Play, leading to faster installs and adding
@@ -312,11 +313,15 @@ module.exports = function(webpackEnv) {
                 formatter: require.resolve('react-dev-utils/eslintFormatter'),
                 eslintPath: require.resolve('eslint'),
                 // @remove-on-eject-begin
-                baseConfig: {
-                  extends: [require.resolve('eslint-config-react-app')],
-                },
+                // baseConfig: {
+                //   extends: [
+                //     require.resolve('eslint-config-react-app'),
+                //     require.resolve('eslint-config-airbnb'),
+                //     'plugin:jsx-a11y/recommended'
+                //   ],
+                // },
                 ignore: false,
-                useEslintrc: false,
+                useEslintrc: true,
                 // @remove-on-eject-end
               },
               loader: require.resolve('eslint-loader'),
@@ -517,6 +522,7 @@ module.exports = function(webpackEnv) {
     },
     plugins: [
       // Generates an `index.html` file with the <script> injected.
+      // We'll use server rendered version
       new HtmlWebpackPlugin(
         Object.assign(
           {},

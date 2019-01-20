@@ -74,23 +74,23 @@ const resolveModule = (resolveFn, filePath) => {
 };
 
 // config after eject: we're in ./config/
-module.exports = {
-  dotenv: resolveApp('.env'),
-  appPath: resolveApp('.'),
-  appBuild: resolveApp('build'),
-  appPublic: resolveApp('public'),
-  appHtml: resolveApp('public/index.html'),
-  appIndexJs: resolveModule(resolveApp, 'src/index'),
-  appPackageJson: resolveApp('package.json'),
-  appSrc: resolveApp('src'),
-  appTsConfig: resolveApp('tsconfig.json'),
-  yarnLockFile: resolveApp('yarn.lock'),
-  testsSetup: resolveModule(resolveApp, 'src/setupTests'),
-  proxySetup: resolveApp('src/setupProxy.js'),
-  appNodeModules: resolveApp('node_modules'),
-  publicUrl: getPublicUrl(resolveApp('package.json')),
-  servedPath: getServedPath(resolveApp('package.json')),
-};
+// module.exports = {
+//   dotenv: resolveApp('.env'),
+//   appPath: resolveApp('.'),
+//   appBuild: resolveApp('build'),
+//   appPublic: resolveApp('public'),
+//   appHtml: resolveApp('public/index.html'),
+//   appIndexJs: resolveModule(resolveApp, 'src/index'),
+//   appPackageJson: resolveApp('package.json'),
+//   appSrc: resolveApp('src'),
+//   appTsConfig: resolveApp('tsconfig.json'),
+//   yarnLockFile: resolveApp('yarn.lock'),
+//   testsSetup: resolveModule(resolveApp, 'src/setupTests'),
+//   proxySetup: resolveApp('src/setupProxy.js'),
+//   appNodeModules: resolveApp('node_modules'),
+//   publicUrl: getPublicUrl(resolveApp('package.json')),
+//   servedPath: getServedPath(resolveApp('package.json')),
+// };
 
 // @remove-on-eject-begin
 const resolveOwn = relativePath => path.resolve(__dirname, '..', relativePath);
@@ -99,10 +99,12 @@ const resolveOwn = relativePath => path.resolve(__dirname, '..', relativePath);
 module.exports = {
   dotenv: resolveApp('.env'),
   appPath: resolveApp('.'),
-  appBuild: resolveApp('build'),
+  appBuild: resolveApp('build/client'),
+  serverBuild: resolveApp('build/server'),
   appPublic: resolveApp('public'),
-  appHtml: resolveApp('public/index.html'),
-  appIndexJs: resolveModule(resolveApp, 'src/index'),
+  appHtml: resolveApp('public/index-app.html'), // point to alternative
+  appIndexJs: resolveModule(resolveApp, 'src/client/index'),
+  serverIndexJs: resolveModule(resolveApp, 'src/server/index'),
   appPackageJson: resolveApp('package.json'),
   appSrc: resolveApp('src'),
   appTsConfig: resolveApp('tsconfig.json'),

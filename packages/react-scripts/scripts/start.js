@@ -44,8 +44,10 @@ const {
   prepareUrls,
 } = require('react-dev-utils/WebpackDevServerUtils');
 const openBrowser = require('react-dev-utils/openBrowser');
+const { exec } = require('child_process');
 const paths = require('../config/paths');
 const configFactory = require('../config/webpack.config');
+const configServerFactory = require('../config/webpack.config.server');
 const createDevServerConfig = require('../config/webpackDevServer.config');
 
 const useYarn = fs.existsSync(paths.yarnLockFile);
@@ -58,6 +60,7 @@ if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
 
 // Tools like Cloud9 rely on this.
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 3000;
+const DEFAULT_SERVER_PORT = parseInt(process.env.PORT, 10) || 3001;
 const HOST = process.env.HOST || '0.0.0.0';
 
 if (process.env.HOST) {
@@ -93,10 +96,15 @@ checkBrowsers(paths.appPath, isInteractive)
     }
     const config = configFactory('development');
     const protocol = process.env.HTTPS === 'true' ? 'https' : 'http';
-    const appName = require(paths.appPackageJson).name;
+    // const appName = require(paths.appPackageJson).name;
     const urls = prepareUrls(protocol, HOST, port);
+    process.env.REACT_APP_CLIENT_PORT = port;
+
     // Create a webpack compiler that is configured with custom messages.
-    const compiler = createCompiler(webpack, config, appName, urls, useYarn);
+    // const compiler = createCompiler(webpack, config, appName, urls, useYarn);
+    //const configWebpackClient = require('../config/webpack.config');
+    const compiler = webpack(config);
+
     // Load proxy config
     const proxySetting = require(paths.appPackageJson).proxy;
     const proxyConfig = prepareProxy(proxySetting, paths.appPublic);
@@ -114,7 +122,71 @@ checkBrowsers(paths.appPath, isInteractive)
       if (isInteractive) {
         clearConsole();
       }
-      console.log(chalk.cyan('Starting the development server...\n'));
+      console.log(chalk.cyan('Starting the client development server...\n'));
+
+      // only start client dev server
+      const uiOnly = process.argv[2];
+      if (!uiOnly) {
+        choosePort(HOST, DEFAULT_SERVER_PORT)
+          .then(portServer => {
+            if (portServer == null) {
+              // We have not found a port
+              return;
+            }
+
+            process.env.REACT_APP_SERVER_PORT = portServer;
+            const compiler = webpack(configServerFactory('production'));
+            const urls = prepareUrls(protocol, HOST, portServer);
+            let isServerRunning;
+
+            compiler.watch(
+              {
+                // watch options:
+                aggregateTimeout: 300,
+              },
+              function(err, stats) {
+                // console.log(stats); // XXX pass data to node
+                if (err) {
+                  console.log('error on webpack server', err);
+                }
+
+                if (!isServerRunning) {
+                  isServerRunning = true;
+                  const nodemon = exec(
+                    'nodemon --watch build/server build/server/bundle.js build/server/bundle.js'
+                  );
+
+                  // This is to outpout in the terminal the child process
+                  nodemon.stdout.on('data', function(data) {
+                    console.log(data.toString());
+                  });
+                  nodemon.stderr.on('data', d => console.error(d.toString()));
+                  nodemon.on('error', console.error);
+                  nodemon.on('exit', function(code) {
+                    console.log(
+                      'nodemon process exited with code ' + code.toString()
+                    );
+                  });
+
+                  console.log(
+                    chalk.yellow(
+                      `Starting the server on port ${portServer}...\n`
+                    )
+                  );
+                  setTimeout(() => {
+                    openBrowser(urls.localUrlForBrowser);
+                  }, 1000);
+                }
+              }
+            );
+          })
+          .catch(err => {
+            if (err && err.message) {
+              console.log(err.message);
+            }
+            process.exit(1);
+          });
+      }
       openBrowser(urls.localUrlForBrowser);
     });
 
